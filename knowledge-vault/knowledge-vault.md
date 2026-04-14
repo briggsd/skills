@@ -1,7 +1,6 @@
 # knowledge-vault (skill)
 
-**Status:** Built 2026-04-13. Packaged as `knowledge-vault.skill` and ready to share.
-**Purpose:** Interactive Claude skill that scaffolds a "second brain" knowledge vault — the same pattern used to build [[CLAUDE]] (this vault's root).
+**Purpose:** Interactive Claude skill that scaffolds a "second brain" knowledge vault.
 
 ## What it does
 
@@ -12,11 +11,7 @@ Walks the user through an interactive setup:
 4. Opt in/out of 10 maintenance rules
 5. Scaffold the vault + templates
 
-## Source
-
-Lives at `/sessions/funny-sharp-cerf/knowledge-vault/` (scratchpad). Packaged as `.skill` file for distribution.
-
-## Structure
+## Structure (inside the `.skill`)
 
 - `SKILL.md` — skill instructions for Claude
 - `README.md` — human-facing
@@ -24,11 +19,9 @@ Lives at `/sessions/funny-sharp-cerf/knowledge-vault/` (scratchpad). Packaged as
 - `flavors/personal.md`, `work.md`, `minimal.md` — preset defaults
 - `templates/` — root CLAUDE.md template + folder templates + note templates
 
-## Sharing
+## Install
 
-- Personal use: scaffolded [[CLAUDE|this vault]] directly (not via the skill)
-- Work: install the `.skill` file on work machine via Cowork
-- Coworkers: send them the `.skill` file — one-click install
+Install `knowledge-vault.skill` into Claude Code, then invoke the skill and follow the prompts.
 
 ## Maintenance rules included (opt-in during setup)
 
