@@ -309,6 +309,8 @@ After generating a capture, check whether the content should feed into long-live
 
 4. **Cross-link both directions.** Add a `## Topics Fed` section to the capture note listing the topic docs it contributed to. Add the capture to the topic doc's Sources section.
 
+5. **Run the topic validator (Step 5b).** After updating each topic doc, run the `topic-validator` skill against it. This catches concept-level redundancy introduced by the distillation — the same principle appearing under two headings, or a new insight appended rather than woven in. Fix any high-confidence findings before moving to Step 6. If the validator finds nothing, proceed.
+
 **Topic doc template:**
 
 ```markdown
