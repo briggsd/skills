@@ -1,0 +1,5 @@
+# {{FOLDER_NAME}}/ — Guide
+
+{{FOLDER_DESCRIPTION}}
+
+{{FOLDER_EXAMPLES}}
