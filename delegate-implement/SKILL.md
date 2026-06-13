@@ -1,6 +1,6 @@
 ---
 name: delegate-implement
-description: Coordinator/implementer duo — Claude writes a tight spec and reviews, a delegated implementer does the file-heavy typing, to keep the coordinator's context lean and the output verified. Two backends — an in-harness Claude subagent (default) or the Codex CLI (gpt-5-codex, for cross-provider review or autonomous runs). Use when the user wants to offload implementation of a well-scoped task ("delegate this", "use the duo", "have codex/sonnet do it", "implement #NN with a subagent") and verify it with a test gate.
+description: Coordinator/implementer duo — Claude writes a tight spec and reviews, a delegated implementer does the file-heavy typing, to keep the coordinator's context lean and the output verified. Two backends — an in-harness Claude subagent (default; pick the model haiku/sonnet/opus to the task) or the Codex CLI (gpt-5-codex, for cross-provider review or autonomous runs). Use when the user wants to offload implementation of a well-scoped task ("delegate this", "use the duo", "have haiku/sonnet/codex do it", "implement #NN with a subagent") and verify it with a test gate.
 ---
 
 # delegate-implement — Claude coordinates, a delegated implementer types
@@ -20,9 +20,10 @@ implementer's summary, and the diff; never its full transcript/stream.
 
 The coordinator discipline below is identical for both. The verdict from head-to-head use:
 
-- **(A) In-harness Claude subagent — DEFAULT.** Spawn via the Agent/Task tool (`model: sonnet`).
-  Lowest friction (no external auth/process), and you can inspect its *actual* tool-call
-  transcript, which shrinks the confabulation blind spot. Best for the normal implement loop.
+- **(A) In-harness Claude subagent — DEFAULT.** Spawn via the Agent/Task tool. Lowest friction
+  (no external auth/process), and you can inspect its *actual* tool-call transcript, which
+  shrinks the confabulation blind spot. Best for the normal implement loop. Pick the model to
+  the task (see **Picking the subagent model** below) — `model: sonnet` is the safe default.
 - **(B) Codex CLI (`gpt-5-codex`).** A *different provider* — use it as the **independent
   reviewer** on risky changes (decorrelated blind spots beat same-family review), or when you
   need an implementer with its own sandbox/gate-running **outside** a Claude harness. More
@@ -32,6 +33,29 @@ The coordinator discipline below is identical for both. The verdict from head-to
 **The implementer choice is second-order.** What makes either safe is the coordinator
 discipline (independent gate + diff reconciliation), not which model typed. Don't drop the
 checks for either.
+
+### Picking the subagent model (backend A)
+
+The spec carries the weight, not the model — so a cheaper/faster model is a real option when
+the spec is tight and the edit is mechanical. Scale the model to the *judgment* the implementer
+still has to exercise after reading the spec, not to the line count.
+
+- **`haiku` (Haiku 4.5) — cheapest/fastest.** Use when the spec leaves little to decide: a clear
+  precedent to mirror, exact `file:line` targets, named test infra, and a small edit surface.
+  Mechanical plumbing, boilerplate, repetitive renames-with-logic, "mirror PR #NN here." Verify
+  the gate + diff as always — Haiku is likelier to stop early or thin out tests if the spec is
+  underspecified, so it raises the bar on spec quality rather than lowering it.
+- **`sonnet` (Sonnet 4.6) — DEFAULT, the safe middle.** Use when the implementer must still make
+  local design calls: choosing where to factor, navigating an unfamiliar subsystem, non-obvious
+  test design, or a larger/multi-file surface. This is the right default when unsure.
+- **`opus` — rarely.** Only when the task is genuinely hard to *specify* (you can't reduce it to
+  a precedent + acceptance criteria) and the implementer's own reasoning is load-bearing. If
+  you're reaching for Opus, first ask whether better specing would let Sonnet do it — usually yes.
+
+Cost/latency ladder: `haiku` ≪ `sonnet` < `opus`. **Bias toward the cheapest model the spec can
+support**, then let the gate catch the rest. If Haiku stops early or confabulates a test, the
+fix is usually a sharper spec (precedent + test infra), then re-run — not an automatic step up
+to Sonnet, though stepping up is the fallback when a second tightened spec still doesn't land.
 
 ## When to use / not
 - **Use** for a well-scoped task you can specify precisely and verify with a test gate.
@@ -61,8 +85,9 @@ Spend coordinator effort here (an Explore pass / the repo extending-doc) — it 
 clean completion. **Keep delegations small** — confab risk scales with edit-site count.
 
 ### 3. Run the implementer
-- **(A) Subagent:** Agent/Task tool, `model: sonnet`, the spec as the prompt. It returns a
-  final report (its summary) and runs the gate itself. Background or foreground.
+- **(A) Subagent:** Agent/Task tool, the spec as the prompt, `model:` chosen per **Picking the
+  subagent model** above (`haiku` for tight mechanical specs, `sonnet` default, `opus` rarely).
+  It returns a final report (its summary) and runs the gate itself. Background or foreground.
 - **(B) Codex CLI:** `bash <skill-dir>/run-codex.sh <spec.md> <repo-dir> <out-prefix>` via Bash
   `run_in_background: true`. Produces `<prefix>-last.txt` (summary) + `<prefix>-stream.jsonl`.
   Peek `head -4 <prefix>-stream.jsonl` early to confirm it didn't error on auth/model.
